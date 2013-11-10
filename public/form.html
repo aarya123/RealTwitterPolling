@@ -78,15 +78,15 @@
 
 		<div class="form">
 			<center>
-			<form>
+			<!--<form>-->
 				<textarea cols="40" rows="3" id="question" name="question"></textarea><br>
 				
 				<div id="answersDiv">
 				</div>
 				<input type="button" value="Add an answer" class="button" id="add" onClick="addAnswer()"><input type="button" value="Remove last answer" class="button" id="remove" onClick="removeLast()"><br>
 				Characters Remaining: <input type="text" size="3" id="counter" name="count"><br>
-				<input type="submit" value="Ask Question!" class="button" id="submit">
-			</form> 
+				<input type="submit" onclick="submit()" value="Ask Question!" class="button" id="submit">
+			<!--</form>--> 
 			<center>
 		</div>
 	</body>

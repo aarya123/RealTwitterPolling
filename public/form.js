@@ -41,3 +41,17 @@ setInterval(function(){
 	counter.value = 140 - count;
 	submit.disabled = (count > 140);
 },100);
+
+function submit() {
+	var req = new XMLHttpRequest();
+	req.open('POST', 'askQuestion', true);
+	req.setRequestHeader("Content-type", "application/json");
+	var post = {};
+	post.question = question.value;
+	post.answers = [];
+	for(var i = 0; i < answers.length; ++i) {
+		post.answers[i] = answers[i].value;
+	}
+	console.log(post);
+	req.send(JSON.stringify(post));
+}

@@ -50,11 +50,14 @@ app.get("/sign_in_callback", function(req, res) {
 });
 
 app.get("/GetAnswer", function(req, res) {
-	
+
 });
 
-app.get("/AskQuestion", function(req, res) {
-
+app.post("/askQuestion", function(req, res) {
+	console.log(req.body);
+	res.writeHead(200, {'Content-Type': 'text/plain'});
+	res.write("OK");
+	res.end();
 });
 
 
