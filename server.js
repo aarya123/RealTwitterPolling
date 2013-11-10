@@ -1,10 +1,7 @@
 var express = require("express");
 var app = express();
 var twitter = require("ntwitter");
-var mongojs = require('mongojs');
-var db = mongojs('db')
 var url = require('url');
-var collection = db.collection("test");
  
 app.use(express.static(__dirname+'/public'));
 app.use(express.bodyParser());
@@ -35,7 +32,7 @@ app.get("/sign_in_callback", function(req, res) {
 		"consumer_secret": consumer_secret
 	});
 	twit.gatekeeper()(req,res,function(){
-	    req_cookie = twit.cookie(req);
+	    var req_cookie = twit.cookie(req);
 	    twit.options.access_token_key = req_cookie.access_token_key;
 	    twit.options.access_token_secret = req_cookie.access_token_secret; 
 
@@ -54,10 +51,27 @@ app.get("/GetAnswer", function(req, res) {
 });
 
 app.post("/askQuestion", function(req, res) {
-	console.log(req.body);
-	res.writeHead(200, {'Content-Type': 'text/plain'});
-	res.write("OK");
-	res.end();
+	var twit = new twitter({
+		"consumer_key": consumer_key,
+		"consumer_secret": consumer_secret
+	});
+	twit.gatekeeper()(req,res,function(){
+		console.log(req.body);
+		var req_cookie = twit.cookie(req);
+		twit.options.access_token_key = req_cookie.access_token_key;
+		twit.options.access_token_secret = req_cookie.access_token_secret;
+		twit.verifyCredentials(function (err, data) {
+			res.writeHead(200, {'Content-Type': 'text/plain'});
+			if(err) {
+				res.write("FAIL");
+			}
+			else {
+				res.write("OK");
+
+			}
+			res.end();
+	    });
+	});
 });
 
 

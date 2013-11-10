@@ -4,6 +4,5 @@
     "dependencies": {
         "ntwitter": "latest",
         "express": "latest",
-        "mongojs": "latest"
     }
 }
