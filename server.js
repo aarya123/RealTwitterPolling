@@ -69,17 +69,17 @@ app.post("/askQuestion", function(req, res) {
 				res.write("OK");
 				twit.updateStatus(req.body.question + 
 					" " + req.body.answers.join(','), function(err, data) {
-						console.log(err);
+						console.log(err, data);
 					});
-				console.log("OK");
-				twit.stream("statuses/mentions_timeline", {}, function(stream) {
-					console.log("statuses/mentions");
+				/*
+				twit.stream("statuses/", {}, function(stream) {
 					stream.on('data', console.log);
 					stream.on('error', function(data, code) {
-						console.log(data, code);
+						console.log("error", data, code);
 						stream.destroy();
 					})
 				});
+*/
 			}
 			res.end();
 	    });
