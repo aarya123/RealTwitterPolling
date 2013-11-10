@@ -8,7 +8,14 @@ var app = express();
     res.sendfile('public/form.html')
  });
  
- var port = process.env.PORT || 80;
+
+ var port;
+ if(process.argv.length >= 3) {
+ 	port = process.argv[2];
+ }
+ else {
+ 	port = 5000;
+ }
  app.listen(port, function() {
    console.log("Listening on " + port + " " + __dirname);
  });
