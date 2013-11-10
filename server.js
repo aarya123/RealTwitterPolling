@@ -72,12 +72,13 @@ app.post("/askQuestion", function(req, res) {
 	twit.gatekeeper()(req,res,function(){
 		console.log(req.body);
 		var req_cookie = twit.cookie(req);
+		var user_id = req_cookie.user_id;
 		//not secure at all, but whatever
 		twit.options.access_token_key = req_cookie.access_token_key;
 		twit.options.access_token_secret = req_cookie.access_token_secret;
 		//make sure each user has their own array inside the response array
-		if(!responses[req_cookie.user_id]) {
-			responses[req_cookie.user_id] = {};
+		if(!responses[user_id]) {
+			responses[user_id] = {};
 		}
 		//TODO: reorganize logic so it isn't inside verifyCredentials
 		twit.verifyCredentials(function (err, data) {
@@ -96,22 +97,22 @@ app.post("/askQuestion", function(req, res) {
 						" #" + req.body.answers.join(' , #'), function(err, data) {
 							if(!err) {
 								//Make the specific question be its own array inside the user sub array
-								responses[req_cookie.user_id][questionMatch] = {};
+								responses[user_id][questionMatch] = {};
 								//initialize all answers to 0
-								var question = responses[req_cookie.user_id][questionMatch];
+								var question = responses[user_id][questionMatch];
 								for(var i = 0; i < req.body.answers.length; ++i) {
 									question[req.body.answers[i]] = 0;
 								}
 							}
 						});
 					//if we don't already have a active user stream for this user, make a new one
-					if(!streams[req_cookie.user_id]) {
+					if(!streams[user_id]) {
 						stream = twit.stream("user", function(stream) {
 							//cleanup clears the stream from the stream array and outputs the final tally of answers
 							function cleanup() {
 								stream.destroy()
-								delete streams[req_cookie.user_id];
-								var question = responses[req_cookie.user_id][questionMatch];
+								delete streams[user_id];
+								var question = responses[user_id][questionMatch];
 								//# of votes is # of people who answered + # of answers - # of answers
 								var votes = Object.keys(question).length - req.body.answers.length;
 								var status;
@@ -135,15 +136,15 @@ app.post("/askQuestion", function(req, res) {
 							stream.on('data', function(data) {
 								console.log(data.text);
 								//if this user is talking to our user, check for a potential question being answered
-								if(data.in_reply_to_user_id_str == req_cookie.user_id) {
+								if(data.in_reply_to_user_id_str == user_id) {
 									var matches = data.text.match(hashtagRegex);
 									if(matches && matches.length == 2) {
 										//question should be the 1st match and answer should be the second
 										var question = matches[0], answer = matches[1];
 										answer = answer.replace("#","");
 										//if this question was asked by the user
-										if(responses[req_cookie.user_id][question]) {
-											var curQuestion = responses[req_cookie.user_id][question];
+										if(responses[user_id][question]) {
+											var curQuestion = responses[user_id][question];
 											//if the answer is valid
 											if(curQuestion[answer] >= 0) {
 												//if this user hasn't already voted
@@ -162,7 +163,7 @@ app.post("/askQuestion", function(req, res) {
 													"your reply to my poll. Try voting again", function(err, data) {});
 											}
 										}
-										console.log(responses[req_cookie.user_id][question]);
+										console.log(responses[user_id][question]);
 									}
 								}
 							});
