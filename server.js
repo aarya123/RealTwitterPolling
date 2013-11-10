@@ -7,6 +7,7 @@ var url = require('url');
 var collection = db.collection("test");
  
 app.use(express.static(__dirname+'/public'));
+app.use(express.bodyParser());
 
 /* serves main page */
 app.get("/", function(req, res) {
@@ -34,22 +35,22 @@ app.get("/sign_in_callback", function(req, res) {
 		"consumer_secret": consumer_secret
 	});
 	twit.gatekeeper()(req,res,function(){
-    req_cookie = twit.cookie(req);
-    twit.options.access_token_key = req_cookie.access_token_key;
-    twit.options.access_token_secret = req_cookie.access_token_secret; 
+	    req_cookie = twit.cookie(req);
+	    twit.options.access_token_key = req_cookie.access_token_key;
+	    twit.options.access_token_secret = req_cookie.access_token_secret; 
 
-    twit.verifyCredentials(function (err, data) {
-      if(err)
-        console.log("Verification failed : " + err)
-    });
-    res.statusCode = 302;
-    res.setHeader("Location", "/form");
-    res.end();
+	    twit.verifyCredentials(function (err, data) {
+	      if(err)
+	        console.log("Verification failed : " + err)
+	    });
+	    res.statusCode = 302;
+	    res.setHeader("Location", "/form");
+	    res.end();
 	});
 });
 
 app.get("/GetAnswer", function(req, res) {
-
+	
 });
 
 app.get("/AskQuestion", function(req, res) {
