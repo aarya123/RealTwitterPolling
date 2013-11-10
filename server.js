@@ -71,15 +71,17 @@ app.post("/askQuestion", function(req, res) {
 					" " + req.body.answers.join(','), function(err, data) {
 						console.log(err, data);
 					});
-				/*
-				twit.stream("statuses/", {}, function(stream) {
-					stream.on('data', console.log);
+				twit.stream("user", {}, function(stream) {
+					stream.on('data', function(data) {
+						if(data.in_reply_to_user_id_str == req_cookie.user_id) {
+							
+						}
+					});
 					stream.on('error', function(data, code) {
 						console.log("error", data, code);
 						stream.destroy();
 					})
 				});
-*/
 			}
 			res.end();
 	    });
