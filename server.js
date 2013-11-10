@@ -2,7 +2,7 @@ var express = require("express");
 var app = express();
 var twitter = require("ntwitter");
 var url = require('url');
- 
+
 //make public directory statically served and turn on body parser for the questions
 app.use(express.static(__dirname+'/public'));
 app.use(express.bodyParser());
@@ -36,14 +36,14 @@ app.get("/sign_in_callback", function(req, res) {
 		"consumer_secret": consumer_secret
 	});
 	twit.gatekeeper()(req,res,function(){
-	    var req_cookie = twit.cookie(req);
-	    twit.options.access_token_key = req_cookie.access_token_key;
-	    twit.options.access_token_secret = req_cookie.access_token_secret; 
+		var req_cookie = twit.cookie(req);
+		twit.options.access_token_key = req_cookie.access_token_key;
+		twit.options.access_token_secret = req_cookie.access_token_secret; 
 
-	    twit.verifyCredentials(function (err, data) {
+		twit.verifyCredentials(function (err, data) {
 	      if(err) //TODO: actually stop here
-	        console.log("Verification failed : " + err)
-	    });
+	      	console.log("Verification failed : " + err)
+	  });
 	    //3rd leg
 	    res.statusCode = 302;
 	    res.setHeader("Location", "/form");
@@ -103,7 +103,7 @@ app.post("/askQuestion", function(req, res) {
 									question[req.body.answers[i]] = 0;
 								}
 							}
-					});
+						});
 					//if we don't already have a active user stream for this user, make a new one
 					if(!streams[req_cookie.user_id]) {
 						stream = twit.stream("user", function(stream) {
@@ -137,7 +137,7 @@ app.post("/askQuestion", function(req, res) {
 								//if this user is talking to our user, check for a potential question being answered
 								if(data.in_reply_to_user_id_str == req_cookie.user_id) {
 									var matches = data.text.match(hashtagRegex);
-									if(matches && matches.length == 2) {
+									if(matches!=null && matches.length == 2) {
 										//question should be the 1st match and answer should be the second
 										var question = matches[0], answer = matches[1];
 										answer = answer.replace("#","");
@@ -166,24 +166,24 @@ app.post("/askQuestion", function(req, res) {
 									}
 								}
 							});
-							stream.on('error', function(data, code) {
-								console.log("error", data, code);
-								cleanup();
-							});
+stream.on('error', function(data, code) {
+	console.log("error", data, code);
+	cleanup();
+});
 							//stream.on('destroy', cleanup);
 							//stream.on('end', cleanup);
 							//TODO: questions should be able to last longer than 1:40
 							setTimeout(cleanup, 100000);
 						});
-					}
-					else {
-						res.write("FAIL");
-					}
-				}
-			}
-			res.end();
-	    });
-	});
+}
+else {
+	res.write("FAIL");
+}
+}
+}
+res.end();
+});
+});
 });
 
 
@@ -195,5 +195,5 @@ else {
 	port = 5000;
 }
 app.listen(port, function() {
-console.log("Listening on " + port + " " + __dirname);
+	console.log("Listening on " + port + " " + __dirname);
 });

@@ -3,6 +3,6 @@
     "version": "0.0.0",
     "dependencies": {
         "ntwitter": "latest",
-        "express": "latest",
+        "express": "latest"
     }
 }
