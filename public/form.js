@@ -49,6 +49,16 @@ function submit() {
 	var post = {};
 	post.question = question.value;
 	post.answers = [];
+	var total=60000;
+	if(Interval.value=='s')
+		total=timeLength.value*1000;
+	if(Interval.value=='m')
+		total=timeLength.value*60000;
+	if(Interval.value=='h')
+		total=timeLength.value*3600000;
+	if(Interval.value=='d')
+		total=timeLength.value*86400000;
+	post.interval=total;
 	for(var i = 0; i < answers.length; ++i) {
 		post.answers[i] = answers[i].value;
 	}

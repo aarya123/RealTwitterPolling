@@ -156,7 +156,7 @@ function UserStream(twit, user_id) {
 	
 }
 
-UserStream.prototype.addQuestion = function(newQuestion) {
+UserStream.prototype.addQuestion = function(newQuestion,interval) {
 	for(var i = 0; i < this.questions.length; ++i) {
 		if(newQuestion.isQuestionMatch(this.questions[i])) {
 			throw "found duplicate question " + newQuestion.toString();
@@ -164,10 +164,12 @@ UserStream.prototype.addQuestion = function(newQuestion) {
 	}
 	this.questions.push(newQuestion);
 	var self = this;
+	console.log(interval);
 	setTimeout(function() {
 		console.log(newQuestion);
 		self.finishQuestion(newQuestion);
-	}, 60000);
+	}, interval);
+
 }
 
 UserStream.prototype.finishQuestion = function(question) {
@@ -214,11 +216,12 @@ app.post("/askQuestion", function(req, res) {
 		//not secure at all, but whatever
 		twit.options.access_token_key = req_cookie.access_token_key;
 		twit.options.access_token_secret = req_cookie.access_token_secret;
-		var newQuestion;
+		var newQuestion, interval;
 		try {
 			newQuestion = new Question(req_cookie.user_id,
 				req.body.question,
 				req.body.answers);
+			interval=req.body.interval;
 		}
 		catch(e) {
 			console.log(e);
@@ -227,7 +230,7 @@ app.post("/askQuestion", function(req, res) {
 		if(!streams[user_id]) {
 			streams[user_id] = new UserStream(twit, user_id);
 		}
-		streams[user_id].addQuestion(newQuestion);
+		streams[user_id].addQuestion(newQuestion,interval);
 		twit.updateStatus(newQuestion.getQuestionString()
 			, function(err, data) {});
 		return true;

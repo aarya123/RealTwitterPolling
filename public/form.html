@@ -80,7 +80,13 @@
 			<center>
 			<!--<form>-->
 				<textarea cols="40" rows="3" id="question" name="question"></textarea><br>
-				
+				<input type="number" id="timeLength" name="timeLength" value="60"/><select name="Interval" id="Interval">
+																						<option value="s">Seconds</option>
+																						<option value="m">Minutes</option>
+																						<option value="h">Hours</option>
+																						<option value="d">Days</option>
+																					</select>
+
 				<div id="answersDiv">
 				</div>
 				<input type="button" value="Add an answer" class="button" id="add" onClick="addAnswer()"><input type="button" value="Remove last answer" class="button" id="remove" onClick="removeLast()"><br>
