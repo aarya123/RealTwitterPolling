@@ -2,6 +2,7 @@ var express = require("express");
 var app = express();
 var twitter = require("ntwitter");
 var url = require('url');
+var btoa = require('btoa');
 
 //make public directory statically served and turn on body parser for the questions
 app.use(express.static(__dirname+'/public'));
@@ -52,12 +53,27 @@ app.get("/sign_in_callback", function(req, res) {
 });
 
 //TODO: statistics
-app.get("/GetAnswer", function(req, res) {
-
+app.get("/results", function(req, res) {
+	res.sendfile("public/results.html");
+});
+app.get("/graphData", function(req, res) {
+	if(graphData[atob(req.query.id)]) {
+		res.setHeader('content-type', 'application/json');
+		res.write(JSON.stringify(graphData[atob(req.query.id)]));
+		res.end();
+	}
+	else {
+		res.statusCode = 404;
+		res.end();
+	}
 });
 
 //try to store only 1 user stream per user
 var streams = {};
+
+//graph data
+var graphData = {};
+
 
 function Question(id_str, question, answers) {
 	this.id_str = id_str.toString();
@@ -102,6 +118,10 @@ function Answer(rawAnswer) {
 }
 
 Question.prototype.isAnswerMatch = function(answer) {
+	console.log(answer.addr_id_str == this.id_str);
+	console.log(answer.questionText == this.questionText);
+	console.log(answer.answerText);
+	console.log(this.answers[answer.answerText]);
 	return answer.addr_id_str == this.id_str && 
 	answer.questionText == this.questionText && 
 	this.answers[answer.answerText] >= 0 &&
@@ -174,8 +194,14 @@ UserStream.prototype.addQuestion = function(newQuestion,interval) {
 
 UserStream.prototype.finishQuestion = function(question) {
 	var answerString = question.getAnswerString();
+	var id = btoa(this.user_id + question.questionText);
+	graphData[id] = {};
+	graphData[id].answers = question.answers;
+	graphData[id].question = question.questionText;
 	console.log(answerString);
 	this.twit.updateStatus(answerString, function(err, data) {});
+	this.twit.updateStatus("Check out the results at " +
+		"localhost/results?id=" + id, function(err, data) {});
 	this.questions = this.questions.splice(
 		this.questions.indexOf(question), 1
 		);
@@ -189,6 +215,7 @@ UserStream.prototype.onData = function(data) {
 	var newAnswer = new Answer(data);
 	console.log(newAnswer);
 	for(var i = 0; i < this.questions.length; ++i) {
+		console.log(this.questions[i]);
 		if(this.questions[i].isAnswerMatch(newAnswer)) {
 			this.questions[i].doAnswerMatch(newAnswer);
 			console.log("match!");
