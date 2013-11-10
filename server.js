@@ -3,6 +3,7 @@ var app = express();
 var twitter = require("ntwitter");
 var url = require('url');
 var btoa = require('btoa');
+var atob = require('atob');
 
 //make public directory statically served and turn on body parser for the questions
 app.use(express.static(__dirname+'/public'));
@@ -57,15 +58,19 @@ app.get("/results", function(req, res) {
 	res.sendfile("public/results.html");
 });
 app.get("/graphData", function(req, res) {
-	if(graphData[atob(req.query.id)]) {
+	console.log(graphData);
+	if(req.query && req.query.id) {
 		res.setHeader('content-type', 'application/json');
-		res.write(JSON.stringify(graphData[atob(req.query.id)]));
+		res.write(JSON.stringify(graphData[req.query.id]));
 		res.end();
+	}
+	/*if(graphData[atob(req.query.id)]) {
+		
 	}
 	else {
 		res.statusCode = 404;
 		res.end();
-	}
+	}*/
 });
 
 //try to store only 1 user stream per user
@@ -194,7 +199,7 @@ UserStream.prototype.addQuestion = function(newQuestion,interval) {
 
 UserStream.prototype.finishQuestion = function(question) {
 	var answerString = question.getAnswerString();
-	var id = btoa(this.user_id + question.questionText);
+	var id = Math.floor(Math.random() * 10000000);
 	graphData[id] = {};
 	graphData[id].answers = question.answers;
 	graphData[id].question = question.questionText;

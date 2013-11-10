@@ -4,6 +4,7 @@
     "dependencies": {
         "ntwitter": "latest",
         "express": "latest",
-        "btoa": "latest"
+        "btoa": "latest",
+        "atob": "latest"
     }
 }

@@ -1,34 +1,50 @@
 <!DOCTYPE HTML>
 <html>
   <head>
+        <style>
+                body {
+                        background-color: #EEE;
+                }
+        </style>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
+    id = window.location.search.substring(4);
+    var req = new XMLHttpRequest();
+    req.open("GET", "/graphData?id=" + id, false);
+    req.send();
+    var response = JSON.parse(req.responseText);
+    console.log(response);
+    var i=0;
 
-    var answers = Array(); //The text
-    var answerCount = Array(); //The counts
-
-	google.load("visualization", "1", {packages:["corechart"]});
-	google.setOnLoadCallback(drawChart);
-	function drawChart() {
-		var data = google.visualization.arrayToDataTable([
-		['Task', 'Hours per Day'],
-		['Work',     11],
-		['Eat',      2],
-		['Commute',  2],
-		['Watch TV', 2],
-		['Sleep',    7]
-	]);
-
-	var options = {
-	title: 'My Daily Activities'
-	};
-
-	var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-	chart.draw(data, options);
-	}
+    var answers = [];
+    answers.push["Answer", "Response Count"];
+    for(var k in response.answers) {
+    	answers.push([k, response.answers[k]]);
+    }
+    	console.log(answers);
+        google.load("visualization", "1", {packages:["corechart"]});
+        google.setOnLoadCallback(drawChart);
+        function drawChart() {
+                 
+                var data = google.visualization.arrayToDataTable(answers);
+ 
+        var options = {
+                titleTextStyle: {color: '#222'},
+                title: 'Real Twitter Polling Responses',
+                backgroundColor: "#EEE",
+                colors: ['#66CCFF', '#003399', '#318CE7', '#2A52BE', '#4682B4', '#082567', '#007BA7', '#1560BD', '#324AB2', '#0073CF', '#3F00FF', '#008080', '#56A0D3', '#6699CC', '#0099CC', '#40E0D0', '#5072A7', '#007FFF', '#89CFF0', '#318CE7', '#0070FF', '#5D8AA8', '#36434F', '#81D8D0', '#000080', '#CCFFCC'],
+ 
+        };
+ 
+        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+        chart.draw(data, options);
+ 
+        }
     </script>
   </head>
   <body>
+        <center>
     <div id="piechart" style="width: 900px; height: 500px;"></div>
+        </center>
   </body>
 </html>
