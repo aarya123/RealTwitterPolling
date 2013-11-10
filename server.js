@@ -176,7 +176,7 @@ UserStream.prototype.finishQuestion = function(question) {
 	this.twit.updateStatus(answerString, function(err, data) {});
 	this.questions = this.questions.splice(
 		this.questions.indexOf(question), 1
-	);
+		);
 	if(this.questions.length == 0) {
 		this.stream.destroy();
 		delete streams[this.user_id];
