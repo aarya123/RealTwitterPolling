@@ -88,7 +88,7 @@ app.post("/askQuestion", function(req, res) {
 			else {
 				//We are only OK if there is exactly 1 hash tag in the question
 				var matches = req.body.question.match(hashtagRegex);
-				if(matches.length == 1) {
+				if(matches && matches.length == 1) {
 					res.write("OK");
 					var questionMatch = matches[0];
 					//initial question status
