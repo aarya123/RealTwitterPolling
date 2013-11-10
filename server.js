@@ -141,7 +141,7 @@ function UserStream(twit) {
 	var self = this;
 	this.questions = [];
 	this.twit = twit;
-	twit.stream("user", {"replies": "all"},function(stream) {
+	twit.stream("user",function(stream) {
 		self.stream = stream;
 		stream.on('data', function(data) {
 			try {
