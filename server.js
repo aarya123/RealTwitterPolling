@@ -72,11 +72,14 @@ app.post("/askQuestion", function(req, res) {
 						console.log(err);
 					});
 				console.log("OK");
-				/*
-				twit.stream("statuses/mentions_timeline", function(stream) {
+				twit.stream("statuses/mentions_timeline", {}, function(stream) {
+					console.log("statuses/mentions");
 					stream.on('data', console.log);
+					stream.on('error', function(data, code) {
+						console.log(data, code);
+						stream.destroy();
+					})
 				});
-				*/
 			}
 			res.end();
 	    });
