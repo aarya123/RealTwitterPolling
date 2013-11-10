@@ -86,17 +86,18 @@ Question.prototype.isQuestionMatch = function(question) {
 function Answer(rawAnswer) {
 	this.addr_id_str = rawAnswer.in_reply_to_user_id_str;
 	if(!this.addr_id_str) {
-		throw "Invalid answer " + rawAnswer + " no id";
+		throw "Invalid answer " + rawAnswer.text + " no id";
 	}
 	this.id_str = rawAnswer.user.id_str;
 	var hashTags = rawAnswer.text.match(hashtagRegex);
+	console.log(hashTags);
 	if(hashTags && hashTags.length == 2) {
 		this.questionText = hashTags[0];
 		this.answerText = hashTags[1];
 		this.answerText = this.answerText.replace("#","");
 	}
 	else {
-		throw "Invalid answer " + rawAnswer + " no hash tag";
+		throw "Invalid answer " + rawAnswer.text + " no hash tag";
 	}
 }
 
@@ -137,11 +138,11 @@ Question.prototype.getQuestionString = function() {
 	return questionString;
 }
 
-function UserStream(twit) {
+function UserStream(twit, user_id) {
 	var self = this;
 	this.questions = [];
 	this.twit = twit;
-	twit.stream("user",function(stream) {
+	twit.stream("statuses/filter", {"follow": user_id}, function(stream) {
 		self.stream = stream;
 		stream.on('data', function(data) {
 			try {
@@ -198,7 +199,7 @@ UserStream.prototype.onData = function(data) {
 
 
 //convenient regex for hashtags
-var hashtagRegex = /[#]+[A-Za-z0-9-_]+/g
+var hashtagRegex = /\S*#(?:\[[^\]]+\]|\S+)/g;
 
 
 app.post("/askQuestion", function(req, res) {
@@ -224,7 +225,7 @@ app.post("/askQuestion", function(req, res) {
 			return false;
 		}
 		if(!streams[user_id]) {
-			streams[user_id] = new UserStream(twit);
+			streams[user_id] = new UserStream(twit, user_id);
 		}
 		streams[user_id].addQuestion(newQuestion);
 		twit.updateStatus(newQuestion.getQuestionString()
