@@ -137,7 +137,7 @@ app.post("/askQuestion", function(req, res) {
 								//if this user is talking to our user, check for a potential question being answered
 								if(data.in_reply_to_user_id_str == req_cookie.user_id) {
 									var matches = data.text.match(hashtagRegex);
-									if(matches!=null && matches.length == 2) {
+									if(matches && matches.length == 2) {
 										//question should be the 1st match and answer should be the second
 										var question = matches[0], answer = matches[1];
 										answer = answer.replace("#","");
