@@ -3,6 +3,7 @@ var app = express();
 var twitter = require("ntwitter");
 var url = require('url');
  
+//make public directory statically served and turn on body parser for the questions
 app.use(express.static(__dirname+'/public'));
 app.use(express.bodyParser());
 
@@ -15,6 +16,7 @@ app.get("/form", function(req, res) {
 	res.sendfile('public/form.html');
 })
 
+//1st leg of oauth
 var consumer_key = "cjcr0YpkTnPreVobBkQ";
 var consumer_secret = "s9OFkPoL3FaU604fBhyekPsOxxmJaFMKKlMgAiCagZ4";
 app.get("/sign_in", function(req, res) {
@@ -26,6 +28,8 @@ app.get("/sign_in", function(req, res) {
 	var tlog = twit.login(path.pathname, "/sign_in_callback")(req, res);
 })
 
+
+//2nd leg of oauth
 app.get("/sign_in_callback", function(req, res) {
 	var twit = new twitter({
 		"consumer_key": consumer_key,
@@ -37,22 +41,27 @@ app.get("/sign_in_callback", function(req, res) {
 	    twit.options.access_token_secret = req_cookie.access_token_secret; 
 
 	    twit.verifyCredentials(function (err, data) {
-	      if(err)
+	      if(err) //TODO: actually stop here
 	        console.log("Verification failed : " + err)
 	    });
+	    //3rd leg
 	    res.statusCode = 302;
 	    res.setHeader("Location", "/form");
 	    res.end();
 	});
 });
 
+//TODO: statistics
 app.get("/GetAnswer", function(req, res) {
 
 });
 
+//responses to questions are stored here
 var responses = {};
+//try to store only 1 user stream per user
 var streams = {};
 
+//convenient regex for hashtags
 var hashtagRegex = /[#]+[A-Za-z0-9-_]+/g
 
 app.post("/askQuestion", function(req, res) {
@@ -66,45 +75,52 @@ app.post("/askQuestion", function(req, res) {
 		//not secure at all, but whatever
 		twit.options.access_token_key = req_cookie.access_token_key;
 		twit.options.access_token_secret = req_cookie.access_token_secret;
+		//make sure each user has their own array inside the response array
 		if(!responses[req_cookie.user_id]) {
 			responses[req_cookie.user_id] = {};
 		}
+		//TODO: reorganize logic so it isn't inside verifyCredentials
 		twit.verifyCredentials(function (err, data) {
 			res.writeHead(200, {'Content-Type': 'text/plain'});
 			if(err) {
 				res.write("FAIL");
 			}
 			else {
+				//We are only OK if there is exactly 1 hash tag in the question
 				var matches = req.body.question.match(hashtagRegex);
 				if(matches.length == 1) {
 					res.write("OK");
 					var questionMatch = matches[0];
+					//initial question status
 					twit.updateStatus(req.body.question + 
 						" #" + req.body.answers.join(' , #'), function(err, data) {
 							if(!err) {
+								//Make the specific question be its own array inside the user sub array
 								responses[req_cookie.user_id][questionMatch] = {};
+								//initialize all answers to 0
 								var question = responses[req_cookie.user_id][questionMatch];
 								for(var i = 0; i < req.body.answers.length; ++i) {
 									question[req.body.answers[i]] = 0;
 								}
 							}
 					});
+					//if we don't already have a active user stream for this user, make a new one
 					if(!streams[req_cookie.user_id]) {
 						stream = twit.stream("user", function(stream) {
+							//cleanup clears the stream from the stream array and outputs the final tally of answers
 							function cleanup() {
 								stream.destroy()
-								console.log(1);
 								delete streams[req_cookie.user_id];
-								console.log(2);
 								var question = responses[req_cookie.user_id][questionMatch];
+								//# of votes is # of people who answered + # of answers - # of answers
 								var votes = Object.keys(question).length - req.body.answers.length;
 								var status;
 								if(votes != 0) {
+									//TODO: make this look better
 									status = "Results for " + req.body.question + " -";
-									console.log(3);
 									for(var i = 0; i < req.body.answers.length; ++i) {
 										var answer = req.body.answers[i];
-										console.log(answer, question[answer], votes);
+										console.log(answer, question[answer]);
 										status += " #" + answer + " = " + 
 										(((question[answer] / votes) * 10000) / 100) + "%";
 									}
@@ -115,25 +131,25 @@ app.post("/askQuestion", function(req, res) {
 								twit.updateStatus(status, function(err, data) {
 
 								});
-								console.log(4);
 							}
 							stream.on('data', function(data) {
 								console.log(data.text);
+								//if this user is talking to our user, check for a potential question being answered
 								if(data.in_reply_to_user_id_str == req_cookie.user_id) {
-									//terrible
 									var matches = data.text.match(hashtagRegex);
-									console.log(data.text, matches);
 									if(matches && matches.length == 2) {
+										//question should be the 1st match and answer should be the second
 										var question = matches[0], answer = matches[1];
 										answer = answer.replace("#","");
-										console.log(responses[req_cookie.user_id][question]);
+										//if this question was asked by the user
 										if(responses[req_cookie.user_id][question]) {
 											var curQuestion = responses[req_cookie.user_id][question];
+											//if the answer is valid
 											if(curQuestion[answer] >= 0) {
+												//if this user hasn't already voted
 												if(!curQuestion[data.user.id]) {
 													curQuestion[answer]++;
 													curQuestion[data.user.id] = true;
-													console.log(curQuestion);
 												}
 												else {
 													twit.updateStatus("@" + data.user.screen_name +
@@ -146,6 +162,7 @@ app.post("/askQuestion", function(req, res) {
 													"your reply to my poll. Try voting again", function(err, data) {});
 											}
 										}
+										console.log(responses[req_cookie.user_id][question]);
 									}
 								}
 							});
@@ -155,7 +172,8 @@ app.post("/askQuestion", function(req, res) {
 							});
 							//stream.on('destroy', cleanup);
 							//stream.on('end', cleanup);
-							setTimeout(cleanup, 60000);
+							//TODO: questions should be able to last longer than 1:40
+							setTimeout(cleanup, 100000);
 						});
 					}
 					else {
