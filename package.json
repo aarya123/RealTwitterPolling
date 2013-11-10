@@ -2,8 +2,8 @@
     "name": "RealTwitterPolling",
     "version": "0.0.0",
     "dependencies": {
-        "twit": "latest",
+        "ntwitter": "latest",
         "express": "latest",
-        "mongodb": "latest"
+        "mongojs": "latest"
     }
 }
