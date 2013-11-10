@@ -67,7 +67,16 @@ app.post("/askQuestion", function(req, res) {
 			}
 			else {
 				res.write("OK");
-
+				twit.updateStatus(req.body.question + 
+					" " + req.body.answers.join(','), function(err, data) {
+						console.log(err);
+					});
+				console.log("OK");
+				/*
+				twit.stream("statuses/mentions_timeline", function(stream) {
+					stream.on('data', console.log);
+				});
+				*/
 			}
 			res.end();
 	    });
