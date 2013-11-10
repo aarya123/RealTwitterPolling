@@ -2,7 +2,7 @@
 //https://github.com/J7mbo/twitter-api-php
 include 'TwitterAPIExchange.php';
 $test=new OAuth();
-echo $test->GetTweets('https://api.twitter.com/1.1/statuses/mentions_timeline.json',array()).'<br><br><br><br><br><br><br>';
+echo $test->GetTweets(array()).'<br><br><br><br><br><br><br>';
 class OAuth{
     
     public $twitter;
@@ -18,10 +18,10 @@ class OAuth{
         $this->twitter = new TwitterAPIExchange($settings);
     }
 
-    public function GetTweets($url, $params)
+    public function GetTweets($params)
     {
         $getfield='?screen_name=mgottein';
-        return $this->twitter->setGetfield($getfield)->buildOauth($url, 'GET')->performRequest();
+        return $this->twitter->setGetfield($getfield)->buildOauth('https://api.twitter.com/1.1/statuses/mentions_timeline.json', 'GET')->performRequest();
     }
     
     public function SendTweets($url, $params)
